@@ -2,7 +2,8 @@ package org.demo;
 
 import java.util.Map;
 
-public class NonceResponse {
+public class LambdaResponse {
+	
 	Boolean isBase64Encoded;
 	Integer statusCode;
 	Map<String, String> headers;
@@ -32,4 +33,5 @@ public class NonceResponse {
 	public void setBody(String body) {
 		this.body = body;
 	}
+	
 }

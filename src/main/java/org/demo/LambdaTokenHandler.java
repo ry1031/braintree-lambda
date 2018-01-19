@@ -8,15 +8,16 @@ import org.demo.config.BrainSandboxConfig;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 
-public class LambdaTokenHandler implements RequestHandler<TokenRequest, TokenResponse> {
+public class LambdaTokenHandler implements RequestHandler<LambdaRequest, LambdaResponse> {
 	
 	@Override
-	public TokenResponse handleRequest(TokenRequest input, Context arg1) {
-		TokenResponse response = new TokenResponse();
+	public LambdaResponse handleRequest(LambdaRequest request, Context arg1) {
+		
+		LambdaResponse response = new LambdaResponse(); 
 		response.setIsBase64Encoded(false);
 		response.setStatusCode(200);
 		Map<String, String> headers = new HashMap<>();
-		headers.put("content-type", "applicaton/json");
+		headers.put("Content-Type", "application/json");
 		
 		response.setBody(BrainSandboxConfig.getGateway().clientToken().generate());
 		
