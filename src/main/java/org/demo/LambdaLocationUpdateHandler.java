@@ -43,7 +43,7 @@ public class LambdaLocationUpdateHandler implements RequestHandler<LocationsUpda
             table.updateItem(updateItemSpec);
             
             updateItemSpec = new UpdateItemSpec().withPrimaryKey("Id", input.getUserId())
-            		.withUpdateExpression("add Locations = :locations")
+            		.withUpdateExpression("set Locations = :locations")
                     .withValueMap(new ValueMap().withList(":locations", locationList));
 
             table.updateItem(updateItemSpec);
