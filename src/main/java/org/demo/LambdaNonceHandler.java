@@ -10,33 +10,36 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.braintreegateway.Result;
 import com.braintreegateway.Transaction;
 import com.braintreegateway.TransactionRequest;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class LambdaNonceHandler implements RequestHandler<NonceRequest, NonceResponse> {
+public class LambdaNonceHandler implements RequestHandler<LambdaRequest, LambdaResponse> {
+	
+	final ObjectMapper mapper = new ObjectMapper();
 	
 	@Override
-	public NonceResponse handleRequest(NonceRequest nonce, Context arg1) {
-		TransactionRequest request = new TransactionRequest()
-			    .amount(nonce.getAmount())
-			    .paymentMethodNonce(nonce.getNonce())
-			    .options()
-			      .submitForSettlement(true)
-			      .done();
+	public LambdaResponse handleRequest(LambdaRequest request, Context arg1) {
 		
-		Result<Transaction> result = BrainSandboxConfig.getGateway().transaction().sale(request);
-		NonceResponse response = new NonceResponse();
+		String json = request.getBody();
+		LambdaResponse response = new LambdaResponse();
 		response.setIsBase64Encoded(false);
 		response.setStatusCode(200);
 		Map<String, String> headers = new HashMap<>();
-		headers.put("content-type", "applicaton/json");
-		ObjectMapper mapper = new ObjectMapper();
-        try {
-            String json = mapper.writeValueAsString(result);
-            response.setBody(json);
-        } catch (JsonProcessingException e) {
-            response.setStatusCode(500);
-        }
+		headers.put("Content-Type", "application/json");
+		
+		try {
+			NonceRequest nonce = mapper.readValue(json, NonceRequest.class);
+			TransactionRequest transRequest = new TransactionRequest()
+				    .amount(nonce.getAmount())
+				    .paymentMethodNonce(nonce.getNonce())
+				    .options()
+				    .submitForSettlement(true)
+				    .done();
+			Result<Transaction> transResult = BrainSandboxConfig.getGateway().transaction().sale(transRequest);
+			String result = mapper.writeValueAsString(transResult);
+			response.setBody(result);
+		} catch (Exception e) {
+			response.setStatusCode(400);
+		}
 		
 		return response;
 	}
