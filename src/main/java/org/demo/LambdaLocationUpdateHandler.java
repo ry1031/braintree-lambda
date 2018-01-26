@@ -15,7 +15,7 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
-public class LambdaLocationUpdateHandler implements RequestHandler<LocationsUpdateRequest, LocationsUpdateResponse> {
+public class LambdaLocationUpdateHandler implements RequestHandler<LocationsUpdateRequest, LambdaResponse> {
 	
 	static AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard().build();
     static DynamoDB dynamoDB = new DynamoDB(client);
@@ -23,8 +23,8 @@ public class LambdaLocationUpdateHandler implements RequestHandler<LocationsUpda
     static String tableName = "Appointment";
 
 	@Override
-	public LocationsUpdateResponse handleRequest(LocationsUpdateRequest input, Context arg1) {
-		LocationsUpdateResponse response = new LocationsUpdateResponse();
+	public LambdaResponse handleRequest(LocationsUpdateRequest input, Context arg1) {
+		LambdaResponse response = new LambdaResponse();
 		response.setIsBase64Encoded(false);
 		response.setStatusCode(200);
 		Map<String, String> headers = new HashMap<>();
@@ -37,12 +37,12 @@ public class LambdaLocationUpdateHandler implements RequestHandler<LocationsUpda
         	TypeFactory typeFactory = objectMapper.getTypeFactory();
         	List<String> locationList = objectMapper.readValue(input.getLocations(), typeFactory.constructCollectionType(List.class, String.class));
         	
-        	UpdateItemSpec updateItemSpec = new UpdateItemSpec().withPrimaryKey("Id", input.getUserId())
+        	UpdateItemSpec updateItemSpec = new UpdateItemSpec().withPrimaryKey("Id", input.getId())
                     .withUpdateExpression("remove Locations");
 
             table.updateItem(updateItemSpec);
             
-            updateItemSpec = new UpdateItemSpec().withPrimaryKey("Id", input.getUserId())
+            updateItemSpec = new UpdateItemSpec().withPrimaryKey("Id", input.getId())
             		.withUpdateExpression("set Locations = :locations")
                     .withValueMap(new ValueMap().withList(":locations", locationList));
 
@@ -52,7 +52,7 @@ public class LambdaLocationUpdateHandler implements RequestHandler<LocationsUpda
 
         }
         catch (Exception e) {
-            e.printStackTrace();
+        	response.setStatusCode(400);
         }
 		
 		return response;

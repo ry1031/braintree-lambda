@@ -13,7 +13,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class LambdaLocationQueryHandler implements RequestHandler<LocationsQueryRequest, LocationsQueryResponse> {
+public class LambdaLocationQueryHandler implements RequestHandler<LocationsQueryRequest, LambdaResponse> {
 	
 	static AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard().build();
     static DynamoDB dynamoDB = new DynamoDB(client);
@@ -21,8 +21,8 @@ public class LambdaLocationQueryHandler implements RequestHandler<LocationsQuery
     static String tableName = "Appointment";
 
 	@Override
-	public LocationsQueryResponse handleRequest(LocationsQueryRequest input, Context arg1) {
-		LocationsQueryResponse response = new LocationsQueryResponse();
+	public LambdaResponse handleRequest(LocationsQueryRequest input, Context arg1) {
+		LambdaResponse response = new LambdaResponse();
 		response.setIsBase64Encoded(false);
 		response.setStatusCode(200);
 		Map<String, String> headers = new HashMap<>();
@@ -31,7 +31,7 @@ public class LambdaLocationQueryHandler implements RequestHandler<LocationsQuery
 		Table table = dynamoDB.getTable(tableName);
         try {
 
-        	Item item = table.getItem("Id", input.getUserId());
+        	Item item = table.getItem("Id", input.getId());
         	
         	@SuppressWarnings("unchecked")
 			List<String> locations = (List<String>) item.get("Locations");
@@ -42,7 +42,7 @@ public class LambdaLocationQueryHandler implements RequestHandler<LocationsQuery
 
         }
         catch (Exception e) {
-            e.printStackTrace();
+        	response.setStatusCode(400);
         }
 		
 		return response;
